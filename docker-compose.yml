@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3'
 
 networks:
   monitor-net:
@@ -11,7 +11,7 @@ volumes:
 services:
 
   prometheus:
-    image: prom/prometheus:v2.17.1
+    image: prom/prometheus:v2.41.0
     container_name: prometheus
     volumes:
       - ./prometheus:/etc/prometheus
@@ -34,27 +34,29 @@ services:
       org.label-schema.group: "monitoring"
 
   nodeexporter:
-    image: prom/node-exporter:v0.18.1
+    image: 10.43.12.194/project-kanata/node-exporter:latest
     container_name: nodeexporter
+    privileged: true
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
     command:
       - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/host/rootfs'
+      - '--path.sysfs=/sys'
       - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
     restart: unless-stopped
     expose:
       - 9100
-    networks:
-      - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+    network_mode: "host"      
+    #networks:
+    #  - monitor-net
 
   grafana:
-    image: grafana/grafana:9.3.6
+    image: grafana/grafana:9.2.3
     container_name: grafana
     volumes:
       - grafana_data:/var/lib/grafana
